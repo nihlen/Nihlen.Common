@@ -38,9 +38,9 @@ jobs:
       # Nihlen.Common
       - run: dotnet build Nihlen.Common
       - run: dotnet pack --configuration Release Nihlen.Common
-      - run: dotnet nuget push Nihlen.Common/bin/Release/*.nupkg --source "github"
+      - run: dotnet nuget push Nihlen.Common/bin/Release/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
           
       # Nihlen.Message
       - run: dotnet build Nihlen.Message
       - run: dotnet pack --configuration Release Nihlen.Message
-      - run: dotnet nuget push Nihlen.Message/bin/Release/*.nupkg --source "github"
+      - run: dotnet nuget push Nihlen.Message/bin/Release/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
