@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageProjectUrl>https://github.com/nihlen/Nihlen.Common</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/nihlen/Nihlen.Common</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
