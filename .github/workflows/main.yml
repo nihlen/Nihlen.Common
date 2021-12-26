@@ -33,20 +33,14 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
           
+      - run: dotnet nuget add source --username nihlen --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/nihlen/index.json"
+          
       # Nihlen.Common
       - run: dotnet build Nihlen.Common
-      
-      - name: Create the package
-        run: dotnet pack --configuration Release Nihlen.Common
-        
-      - name: Publish the package to GPR
-        run: dotnet nuget push Nihlen.Common/bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN
+      - run: dotnet pack --configuration Release Nihlen.Common
+      - run: dotnet nuget push Nihlen.Common/bin/Release/*.nupkg
           
       # Nihlen.Message
       - run: dotnet build Nihlen.Message
-      
-      - name: Create the package
-        run: dotnet pack --configuration Release Nihlen.Message
-        
-      - name: Publish the package to GPR
-        run: dotnet nuget push Nihlen.Message/bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN
+      - run: dotnet pack --configuration Release Nihlen.Message
+      - run: dotnet nuget push Nihlen.Message/bin/Release/*.nupkg
