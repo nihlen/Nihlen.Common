@@ -1,0 +1,46 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Publish Nuget to GitHub repository
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+        # Authenticates packages to push to GPR
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.x' # SDK Version to use.
+        #  source-url: https://nuget.pkg.github.com/nihlen/index.json
+        #env:
+        #  NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          
+      - run: dotnet nuget add source --username nihlen --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/nihlen/index.json"
+          
+      # Nihlen.Common
+      - run: dotnet build Nihlen.Common
+      - run: dotnet pack --configuration Release Nihlen.Common
+      - run: dotnet nuget push Nihlen.Common/bin/Release/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
+          
+      # Nihlen.Message
+      - run: dotnet build Nihlen.Message
+      - run: dotnet pack --configuration Release Nihlen.Message
+      - run: dotnet nuget push Nihlen.Message/bin/Release/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
