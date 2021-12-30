@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Nihlen.Common;
+using Nihlen.Gamespy;
 
 namespace Test
 {
@@ -9,11 +11,15 @@ namespace Test
     {
         static async Task Main(string[] args)
         {
-            var sw = Stopwatch.StartNew();
-            Console.WriteLine("Started");
-            //await TestPdfAsync();
-            await TestScreenshotAsync();
-            Console.WriteLine($"Finished in {sw.ElapsedMilliseconds} ms");
+            var gs = new Gamespy3Service();
+            //var result = await gs.QueryServerAsync(IPAddress.Parse("177.54.147.195"), 29900);
+            var result = await gs.QueryServerAsync(IPAddress.Parse("95.172.92.116"), 29900);
+
+            //var sw = Stopwatch.StartNew();
+            //Console.WriteLine("Started");
+            ////await TestPdfAsync();
+            //await TestScreenshotAsync();
+            //Console.WriteLine($"Finished in {sw.ElapsedMilliseconds} ms");
         }
 
         private static async Task TestPdfAsync()
