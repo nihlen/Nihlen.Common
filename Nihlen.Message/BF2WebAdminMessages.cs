@@ -1,8 +1,6 @@
 ﻿// ReSharper disable All
 namespace Nihlen.Message;
 
-// TODO: keep messages in sync with Nihlen.Common / github nuget?
-
 /// <summary>
 /// Start a stream a game or optional match
 /// </summary>
@@ -20,6 +18,28 @@ public record StartGameStream
 /// Stop stream for the specified server
 /// </summary>
 public record StopGameStream
+{
+    public string GameServerIp { get; init; }
+    public int GameServerPort { get; init; }
+    public Guid? MatchId { get; init; }
+}
+
+/// <summary>
+/// Game stream has been started with the specified bot and stream URL
+/// </summary>
+public record GameStreamStarted
+{
+    public string GameServerIp { get; init; }
+    public int GameServerPort { get; init; }
+    public Guid? MatchId { get; init; }
+    public string StreamUrl { get; set; }
+    public string BotName { get; set; }
+}
+
+/// <summary>
+/// Game stream has been stopped
+/// </summary>
+public record GameStreamStopped
 {
     public string GameServerIp { get; init; }
     public int GameServerPort { get; init; }
