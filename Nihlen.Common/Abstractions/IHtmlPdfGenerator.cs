@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-
-namespace Nihlen.Common.Abstractions
+﻿namespace Nihlen.Common.Abstractions
 {
     public interface IHtmlPdfGenerator
     {
