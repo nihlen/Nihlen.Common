@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
@@ -30,12 +31,17 @@ public static class TelemetryExtensions
                 .AddTelemetrySdk()
                 .AddEnvironmentVariableDetector();
 
+            serviceVersion ??= Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+
             if (serviceName is not null && serviceVersion is not null)
             {
                 Telemetry.ActivitySource = new ActivitySource(serviceName, serviceVersion);
 
                 resourceBuilder = ResourceBuilder.CreateDefault()
-                    .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
+                    .AddService(
+                        serviceName: serviceName,
+                        serviceVersion: serviceVersion
+                    );
             }
 
             Action<OtlpExporterOptions> otlpOptions = o =>
@@ -45,6 +51,7 @@ public static class TelemetryExtensions
             };
 
             services.AddOpenTelemetryTracing(b => b
+                .AddSource(serviceName)
                 .SetResourceBuilder(resourceBuilder)
                 .AddOtlpExporter(otlpOptions)
                 .AddAspNetCoreInstrumentation(o =>
@@ -65,6 +72,7 @@ public static class TelemetryExtensions
             );
 
             services.AddOpenTelemetryMetrics(b => b
+                .AddMeter(serviceName)
                 .SetResourceBuilder(resourceBuilder)
                 .AddOtlpExporter(otlpOptions)
                 .AddAspNetCoreInstrumentation()
