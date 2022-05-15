@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Exporter;
@@ -13,7 +15,7 @@ namespace Nihlen.Common.Telemetry;
 public static class TelemetryExtensions
 {
     /// <summary>
-    /// Setup OpenTelemetry tracing and metrics to the specified endpoint.
+    /// Setup OpenTelemetry tracing and metrics to the specified endpoint for ASP.NET Core projects.
     /// </summary>
     /// <param name="services">The service collection</param>
     /// <param name="serviceName">Service name (ex. Nihlen.Common)</param>
@@ -27,33 +29,16 @@ public static class TelemetryExtensions
 
         try
         {
-            var resourceBuilder = ResourceBuilder.CreateDefault()
-                .AddTelemetrySdk()
-                .AddEnvironmentVariableDetector();
-
-            serviceVersion ??= Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-
-            if (serviceName is not null && serviceVersion is not null)
-            {
-                Telemetry.ActivitySource = new ActivitySource(serviceName, serviceVersion);
-
-                resourceBuilder = ResourceBuilder.CreateDefault()
-                    .AddService(
-                        serviceName: serviceName,
-                        serviceVersion: serviceVersion
-                    );
-            }
-
-            Action<OtlpExporterOptions> otlpOptions = o =>
-            {
-                o.Endpoint = new Uri(otlpEndpoint ?? "http://localhost:4317");
-                o.Protocol = OtlpExportProtocol.Grpc;
-            };
+            var resourceBuilder = Telemetry.GetResourceBuilder(ref serviceName, ref serviceVersion, ref otlpEndpoint);
 
             services.AddOpenTelemetryTracing(b => b
                 .AddSource(serviceName)
                 .SetResourceBuilder(resourceBuilder)
-                .AddOtlpExporter(otlpOptions)
+                .AddOtlpExporter(o =>
+                {
+                    o.Endpoint = new Uri(otlpEndpoint);
+                    o.Protocol = OtlpExportProtocol.Grpc;
+                })
                 .AddAspNetCoreInstrumentation(o =>
                 {
                     o.RecordException = true;
@@ -74,7 +59,11 @@ public static class TelemetryExtensions
             services.AddOpenTelemetryMetrics(b => b
                 .AddMeter(serviceName)
                 .SetResourceBuilder(resourceBuilder)
-                .AddOtlpExporter(otlpOptions)
+                .AddOtlpExporter(o =>
+                {
+                    o.Endpoint = new Uri(otlpEndpoint);
+                    o.Protocol = OtlpExportProtocol.Grpc;
+                })
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
             );
