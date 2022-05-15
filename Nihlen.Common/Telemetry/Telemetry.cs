@@ -60,7 +60,6 @@ public static class Telemetry
 
         return Sdk.CreateMeterProviderBuilder()
             .AddMeter(serviceName)
-            .AddMeter(serviceName)
             .SetResourceBuilder(resourceBuilder)
             .AddOtlpExporter(o =>
             {
@@ -81,7 +80,7 @@ public static class Telemetry
         ActivitySource = new ActivitySource(serviceName, serviceVersion);
         Meter = new Meter(serviceName, serviceVersion);
 
-        var resourceBuilder = OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
+        var resourceBuilder = ResourceBuilder.CreateDefault()
             .AddService(
                 serviceName: serviceName,
                 serviceVersion: serviceVersion
