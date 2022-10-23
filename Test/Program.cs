@@ -20,16 +20,16 @@ namespace Test
             //Console.WriteLine($"Finished in {sw.ElapsedMilliseconds} ms");
         }
 
-        private static async Task TestPdfAsync()
-        {
-            var pdfGenerator = new HtmlPdfGenerator();
-            await pdfGenerator.SaveUrlPdfAsync("https://www.google.com", @"C:\Projects\DotNet\Nihlen.Common\Test\test.pdf", false);
-        }
+        //private static async Task TestPdfAsync()
+        //{
+        //    var pdfGenerator = new HtmlPdfGenerator();
+        //    await pdfGenerator.SaveUrlPdfAsync("https://www.google.com", @"C:\Projects\DotNet\Nihlen.Common\Test\test.pdf", false);
+        //}
 
-        private static async Task TestScreenshotAsync()
-        {
-            var screenshotter = new WebsiteScreenshotter();
-            await screenshotter.SaveAsync("https://www.google.com", @"C:\Projects\DotNet\Nihlen.Common\Test\hd.png");
-        }
+        //private static async Task TestScreenshotAsync()
+        //{
+        //    var screenshotter = new WebsiteScreenshotter();
+        //    await screenshotter.SaveAsync("https://www.google.com", @"C:\Projects\DotNet\Nihlen.Common\Test\hd.png");
+        //}
     }
 }
