@@ -1,13 +1,11 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Metrics;
-using System.Reflection;
+﻿// ReSharper disable All
+
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Serilog;
 
 namespace Nihlen.Common.Telemetry;
 
@@ -27,11 +25,9 @@ public static class TelemetryExtensions
         if (services is null)
             return null;
 
-        try
-        {
-            var resourceBuilder = Telemetry.GetResourceBuilder(ref serviceName, ref serviceVersion, ref otlpEndpoint);
+        var resourceBuilder = Telemetry.GetResourceBuilder(ref serviceName, ref serviceVersion, ref otlpEndpoint);
 
-            services.AddOpenTelemetryTracing(b => b
+        services.AddOpenTelemetryTracing(b => b
                 .AddSource(serviceName)
                 .SetResourceBuilder(resourceBuilder)
                 .AddOtlpExporter(o =>
@@ -54,25 +50,61 @@ public static class TelemetryExtensions
                     o.EnableConnectionLevelAttributes = true;
                     o.RecordException = true;
                 })
-            );
-
-            services.AddOpenTelemetryMetrics(b => b
-                .AddMeter(serviceName)
-                .SetResourceBuilder(resourceBuilder)
-                .AddOtlpExporter(o =>
+                .AddEntityFrameworkCoreInstrumentation(o =>
                 {
-                    o.Endpoint = new Uri(otlpEndpoint);
-                    o.Protocol = OtlpExportProtocol.Grpc;
+                    o.SetDbStatementForText = true;
+                    o.SetDbStatementForStoredProcedure = true;
                 })
-                .AddAspNetCoreInstrumentation()
-                .AddHttpClientInstrumentation()
-            );
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Failed to setup OpenTelemetry tracing and metrics for {ServiceName} {ServiceVersion} {OtlpEndpoint}", serviceName, serviceVersion, otlpEndpoint);
-        }
+
+        // .SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1))) // sample 10 % of root spans fully
+        );
+
+        services.AddOpenTelemetryMetrics(b => b
+            .AddMeter(serviceName)
+            .SetResourceBuilder(resourceBuilder)
+            .AddOtlpExporter(o =>
+            {
+                o.Endpoint = new Uri(otlpEndpoint);
+                o.Protocol = OtlpExportProtocol.Grpc;
+            })
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+
+            // Not stable yet, seems to cause some memory leaks
+            // .AddEventCounterMetrics(options =>
+            // {
+            //     options.RefreshIntervalSecs = 10;
+            // })
+            .AddRuntimeInstrumentation()
+        );
 
         return services;
+    }
+
+    public static ILoggingBuilder? AddCustomTelemetry(this ILoggingBuilder? logging, string? serviceName = null, string? serviceVersion = null, string? otlpEndpoint = null)
+    {
+        if (logging is null)
+            return null;
+
+        var resourceBuilder = Telemetry.GetResourceBuilder(ref serviceName, ref serviceVersion, ref otlpEndpoint);
+
+        logging.AddOpenTelemetry(options =>
+        {
+            options.IncludeScopes = true;
+            options.IncludeFormattedMessage = true;
+            options.ParseStateValues = true;
+            // options.AttachLogsToActivityEvent();
+
+            options.SetResourceBuilder(resourceBuilder);
+            options.AddOtlpExporter(o =>
+            {
+                o.Endpoint = new Uri(otlpEndpoint);
+                o.Protocol = OtlpExportProtocol.Grpc;
+            });
+
+            // options.AddConsoleExporter();
+        });
+
+        return logging;
     }
 }
