@@ -85,6 +85,13 @@ public static class TelemetryExtensions
     {
         if (logging is null)
             return null;
+        
+        logging.ClearProviders();
+        logging.Configure(options =>
+        {
+            options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId | ActivityTrackingOptions.TraceId | ActivityTrackingOptions.ParentId | ActivityTrackingOptions.Baggage | ActivityTrackingOptions.Tags;
+        });
+        logging.AddFilter("Microsoft.AspNetCore.*", LogLevel.Warning);
 
         var resourceBuilder = Telemetry.GetResourceBuilder(ref serviceName, ref serviceVersion, ref otlpEndpoint);
 
