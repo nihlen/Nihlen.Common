@@ -92,6 +92,7 @@ public static class TelemetryExtensions
             options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId | ActivityTrackingOptions.TraceId | ActivityTrackingOptions.ParentId | ActivityTrackingOptions.Baggage | ActivityTrackingOptions.Tags;
         });
         logging.AddFilter("Microsoft.AspNetCore.*", LogLevel.Warning);
+        logging.AddConsole();
 
         var resourceBuilder = Telemetry.GetResourceBuilder(ref serviceName, ref serviceVersion, ref otlpEndpoint);
 
